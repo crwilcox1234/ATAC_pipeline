@@ -25,6 +25,7 @@ awk -v OFS='\t' '{print$2,$3,$4,$5}' DnAtac_24_3_ATAC_tagdir150_noheader.txt > D
 ```
 
 6. You need to memove the header using the script:
+If you remove the header this way, skip step 7. It becomes irrelevant 
 ```bash
 awk 'NR>1' filename_500.bed > filename_500_1.bed
 ```
