@@ -24,7 +24,13 @@ awk 'NR>34' filename.txt > new_filename.txt
 awk -v OFS='\t' '{print$2,$3,$4,$5}' DnAtac_24_3_ATAC_tagdir150_noheader.txt > DnAtac_24_3_ATAC_tagdir150.bed
 ```
 
-6. The next step is to merge the 150bp and 500bp .bed files: merge_hg38.py
+6. You need to memove the header using the script:
+If you remove the header this way, skip step 7. It becomes irrelevant 
+```bash
+awk 'NR>1' filename_500.bed > filename_500_1.bed
+```
+Then merge the 150bp and 500bp .bed files: merge_hg38.py
+
 7. Take out the first 4 lines of the file. Also the first line is usually only "hr", so have to add a "c" to make it "chr"
 ```bash
 awk 'NR>4' filename_merge_final.bed > filename_merge_final1.bed
