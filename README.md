@@ -43,6 +43,8 @@ coverageBed -abam ../shift_reads/H0_1ATAC_S27_shifted_reads.bam -b H0_1ATAC_S27_
 ```
 10. The next thing is to run IDR to remove peaks that are not reproducible 
 
+NOTE: if you use a genome with chromosome names without 'chr' before the numbers, you need to go into the utils.py file and remove the chr infront of chr[x] and the below statement.
+
 ```bash
 10.	###RUN IDR PIPELINE#### 
 #! /bin/bash
