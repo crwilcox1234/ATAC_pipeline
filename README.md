@@ -175,7 +175,7 @@ cat AS2*.bed AS1*.bed | sort -k1,1 -k2,2n | bedtools merge > AS1_AS2_merged.peak
 
 14. Find how many peaks overlap the ENCODE blacklist
 ```
-bedtools intersect -a AS1_AS2_merged.peaks.bed -b /bio/rmurad/DrMomand/omATAC/analysis/encode-data/ENCODE_blacklisted_regions_hg38/hg38.blacklist.bed hg38.blacklist.bed -wo
+bedtools intersect -a AS1_AS2_merged.peaks.bed -b /bio/rmurad/DrMomand/omATAC/analysis/encode-data/ENCODE_blacklisted_regions_hg38/hg38.blacklist.bed -wo
 ```
 
 15. Remove peaks overlapping ENCODE blacklist
