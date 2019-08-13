@@ -1,7 +1,7 @@
 ATAC Pipeline
 =============
 
-1. First use bowtie to map reads to respective genome, script is called: bowtie_atac.py 
+1. First use bowtie to map reads to respective genome, script is called: bowtie_ATAC_hg381.py, uses NexteraPE-PE.fa 
 2. Then use picard tools to remove PCR duplicates and sort.  script is called: PCR_duplicates.py
 3. Third, shift peaks before calling peaks. Script is called shift.reads.py
 ### Use the command line below to run shift.reads.py
