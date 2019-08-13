@@ -51,6 +51,9 @@ coverageBed -abam ../shift_reads/H0_1ATAC_S27_shifted_reads.bam -b H0_1ATAC_S27_
 
 NOTE: if you use a genome with chromosome names without 'chr' before the numbers, you need to go into the utils.py file and remove the chr infront of chr[x] and the below statement.
 
+##Now use the idr-pipline.py listed above in the scripts.  Makes multiple idr scripts based on an R1_list.
+##idr-pipline.py is based off of the pipline below
+
 ```bash
 10.	###RUN IDR PIPELINE#### 
 #! /bin/bash
@@ -135,14 +138,35 @@ python  run_idr.py idr \
 
 11. Copy idr output for each sample and rename into a new directory
 ### Examples:
+
+```bash
 cp ../AS1/idr_500bp/idr-output/combined.peaks-top-set.txt AS1_500bp_topset.txt
-cp ../AS2/idr_500bp/idr-output/combined.peaks-top-set.txt AS2_500bp_topset.txt
-cp ../AS2/idr_200bp/idr-output/combined.peaks-top-set.txt AS2_200bp_topset.txt
+```
+### Or use the shell script cpnamechange.sh:
+
+``` bash
+while read line
+do
+   cp ../"$line"_500/idr-output/"$line"_combined.peaks-top-set.txt "$line"_500combined.peaks-top-set.txt
+   cp ../"$line"_150/idr-output/"$line"_combined.peaks-top-set.txt "$line"_150combined.peaks-top-set.txt
+done < R1_list
+```
 
 12. Convert IDR output to .bed format
 ```
 awk -v OFS='\t' '{print $2,$3,$4}' AS1_200bp_topset.txt | tail -n+2 | LC_COLLATE=C sort -k1,1 -k2,2n > AS1_200bp_topset.bed
 ```
+
+###Or use the shell script 
+
+```bash
+while read line
+do
+   awk -v OFS='\t' '{print $2,$3,$4}' "$line"_150combined.peaks-top-set.txt | tail -n+2 | LC_COLLATE=C sort -k1,1 -k2,2n > "$line"_150combined.peaks-top-set.bed
+   awk -v OFS='\t' '{print $2,$3,$4}' "$line"_500combined.peaks-top-set.txt | tail -n+2 | LC_COLLATE=C sort -k1,1 -k2,2n > "$line"_500combined.peaks-top-set.bed
+done < R1_list
+
+``` 
 
 13. merge all the peaks
 ```
@@ -154,6 +178,64 @@ cat AS2*.bed AS1*.bed | sort -k1,1 -k2,2n | bedtools merge > AS1_AS2_merged.peak
 bedtools intersect -a AS1_AS2_merged.peaks.bed -b /bio/rmurad/DrMomand/omATAC/analysis/encode-data/ENCODE_blacklisted_regions_hg38/hg38.blacklist.bed hg38.blacklist.bed -wo
 ```
 
-15. Fix the filtered peaks bed file by adding 3 additional columns
-python addPeakName.py AS1_AS2_merged.peaks.noENCODEblacklistedRegions.bed AS1_AS2_merged.peaks. noENCODEblacklistedRegions.fixed.bed
+15. Remove peaks overlapping ENCODE blacklist
 
+```bash
+
+bedtools intersect -v -a merged.peaks.bed -b hg38.blacklist.bed > merged.peaks.noENCODEblacklistedRegions.bed
+
+```
+
+16. Fix the filtered peaks bed file by adding 3 additional columns
+
+### /share/samdata/rmurad/DrMomand/code/ is where you can get the addPeakName.py
+
+```bash
+python addPeakName.py AS1_AS2_merged.peaks.noENCODEblacklistedRegions.bed AS1_AS2_merged.peaks. noENCODEblacklistedRegions.fixed.bed
+```
+
+17. Convert the bed to bigBed
+
+### have your own bedtoBigBed program, have the program directory before the name
+
+```bash
+bedToBigBed merged.peaks.noENCODEblacklistedRegions.fixed.bed hg38.chrom.sizes merged.peaks.noENCODEblacklistedRegions.fixed.bb
+
+```
+
+18. Annotate peaks using homer (annotatePeaks.pl)
+
+```bash
+#! /bin/bash
+#$ -N DvnATAC0_1_S1_merge
+#$ -pe openmp 1
+#$ -q sam,som,bio,pub64
+
+module load samtools/1.3
+module load homer/4.7
+module load python/2.7.2
+module load perl
+module load picard-tools/1.96
+
+annotatePeaks.pl Dvn_0_6_24_48merged.peaks.noENCODEblacklistedRegions.fixed.bed \
+hg19 -raw -annStats Dvn_0_6_24_48annotationStats.txt \
+-d \
+/share/samdata/crwilcox/ATAC_pooled/Donovan/ATAC_1902/rename/DvnATAC0_1_ATAC_tagdir150/ \
+/share/samdata/crwilcox/ATAC_pooled/Donovan/ATAC_1902/rename/DvnATAC0_2_ATAC_tagdir150/ \
+/share/samdata/crwilcox/ATAC_pooled/Donovan/ATAC_1902/rename/DvnATAC0_3_ATAC_tagdir150/ \
+/share/samdata/crwilcox/ATAC_pooled/Donovan/ATAC_1902/rename/DvnATAC6_1_ATAC_tagdir150/ \
+/share/samdata/crwilcox/ATAC_pooled/Donovan/ATAC_1902/rename/DvnATAC6_2_ATAC_tagdir150/ \
+/share/samdata/crwilcox/ATAC_pooled/Donovan/ATAC_1902/rename/DvnATAC6_3_ATAC_tagdir150/ \
+/share/samdata/crwilcox/ATAC_pooled/Donovan/ATAC_1902/rename/DvnATAC24_1_ATAC_tagdir150/ \
+/share/samdata/crwilcox/ATAC_pooled/Donovan/ATAC_1902/rename/DvnATAC24_2_ATAC_tagdir150/ \
+/share/samdata/crwilcox/ATAC_pooled/Donovan/ATAC_1902/rename/DvnATAC24_3_ATAC_tagdir150/ \
+/share/samdata/crwilcox/ATAC_pooled/Donovan/ATAC_1902/rename/DvnATAC48_1_ATAC_tagdir150/ \
+/share/samdata/crwilcox/ATAC_pooled/Donovan/ATAC_1902/rename/DvnATAC48_2_ATAC_tagdir150/ \
+/share/samdata/crwilcox/ATAC_pooled/Donovan/ATAC_1902/rename/DvnATAC48_3_ATAC_tagdir150/ \
+> Dvn_0_6_24_48peak-tags.txt
+
+cut -f 1,20,21,22,23,24,24,25,26,27,28 Dvn_0_6_24_48peak-tags.txt > Dvn_0_6_24_48counts.txt
+
+```
+
+19. You now have a counts matrix you can input into R to analyze
