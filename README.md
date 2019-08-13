@@ -4,19 +4,19 @@ ATAC Pipeline
 1. First use bowtie to map reads to respective genome, script is called: bowtie_atac.py 
 2. Then use picard tools to remove PCR duplicates and sort.  script is called: PCR_duplicates.py
 3. Third, shift peaks before calling peaks. Script is called shift.reads.py
-###Use the command line below to run shift.reads.py
+### Use the command line below to run shift.reads.py
 
 ```bash
 samtools view mappings.nodup.bam | python /dfs1/bio/crwilcox/ATAC_pooled/afterMarkDuplicates/shift.reads.py  shifted_reads.sam
 ```
 
-###The shifted_reads.sam file needs to be converted into a bam file, so you will need a bamheader file for your specific genome.  Then use the script below
+### The shifted_reads.sam file needs to be converted into a bam file, so you will need a bamheader file for your specific genome.  Then use the script below
 ```bash
 cat /dfs1/bio/crwilcox/ATAC_pooled/hg38_bamHeader.sam shifted_reads.sam | samtools view -Sb - > shifted_reads.bam
 ```
 
 4. After shifting reads cn now run peak calling.  I use homer for this with the script named: homer_hg38.py
-###This script includes script for finding peaks for 150bp and 500bp length reads
+### This script includes script for finding peaks for 150bp and 500bp length reads
 
 5. After homer remove the homer header and remove some columns to make a .bed file
 ```bash
@@ -36,11 +36,11 @@ Then merge the 150bp and 500bp .bed files: merge_hg38.py
 awk 'NR>4' filename_merge_final.bed > filename_merge_final1.bed
 ```
 8. Now need to visualize the files on the Genome browser (UCSC or IGV). Use this script: bedtobigwig.py
-###You will need chromsizes.txt, but you can make one in anaconda environment using the script
+### You will need chromsizes.txt, but you can make one in anaconda environment using the script
 ```
 faidx input.fasta -i chromsizes > sizes.genome
 ```
-####pyfaidx is already installed, just need to run it with anaconda
+#### pyfaidx is already installed, just need to run it with anaconda
 
 9. To get # reads in peaks: (bed file must be sorted first):
 ```
@@ -51,8 +51,8 @@ coverageBed -abam ../shift_reads/H0_1ATAC_S27_shifted_reads.bam -b H0_1ATAC_S27_
 
 NOTE: if you use a genome with chromosome names without 'chr' before the numbers, you need to go into the utils.py file and remove the chr infront of chr[x] and the below statement.
 
-##Now use the idr-pipline.py listed above in the scripts.  Makes multiple idr scripts based on an R1_list.
-##idr-pipline.py is based off of the pipline below
+## Now use the idr-pipline.py listed above in the scripts.  Makes multiple idr scripts based on an R1_list.
+## idr-pipline.py is based off of the pipline below
 
 ```bash
 10.	###RUN IDR PIPELINE#### 
@@ -157,7 +157,7 @@ done < R1_list
 awk -v OFS='\t' '{print $2,$3,$4}' AS1_200bp_topset.txt | tail -n+2 | LC_COLLATE=C sort -k1,1 -k2,2n > AS1_200bp_topset.bed
 ```
 
-###Or use the shell script 
+### Or use the shell script 
 
 ```bash
 while read line
